@@ -1,0 +1,193 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "73416772-8ab3-4021-9095-7ffd9a379510",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import smtplib\n",
+    "from email.mime.text import MIMEText\n",
+    "from random import *\n",
+    "from pandas import DataFrame\n",
+    "import pandas as pd"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "096453fe-d772-48b8-b10f-246314146997",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def send_email(message,email):\n",
+    "    smtp = smtplib.SMTP('smtp.*******.com', 587, timeout=120)\n",
+    "    smtp.ehlo()      # say Hello\n",
+    "    smtp.starttls()  # TLS 사용시 필요\n",
+    "    smtp.login('nugejusko@gmail.com', '***********')\n",
+    "\n",
+    "    msg = MIMEText(message)\n",
+    "    msg['Subject'] = '마니또 선정이 예나 딸이에요'\n",
+    "    msg['To'] = email\n",
+    "    smtp.sendmail('*******@*****.com', email, msg.as_string())\n",
+    "    print(f'{email}로 \"{message}\" 발송 완료')\n",
+    "\n",
+    "    smtp.quit()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "f2b4a2ce-92de-4581-b4d9-7ff7786abeb4",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def make_manitto_list(names):\n",
+    "    namecount=len(names)\n",
+    "    alist=[]\n",
+    "    for i in range(namecount):\n",
+    "        a=randint(0,namecount-1)\n",
+    "        while a in alist:\n",
+    "            a=randint(0,namecount-1)\n",
+    "        alist.append(a)\n",
+    "\n",
+    "    manitto={}\n",
+    "    j=0\n",
+    "    for i in alist:\n",
+    "        manitto[names[j]]=names[i]\n",
+    "        j+=1\n",
+    "    return manitto"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "c9c13f5a-bb25-41d1-ac7c-cdbdb44ed8be",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def check(manitto):\n",
+    "    namecount=len(names)\n",
+    "    fromwho=list(manitto.keys())\n",
+    "    towhom=list(manitto.values())\n",
+    "    for i in range(namecount):\n",
+    "        if fromwho[i]==towhom[i]:\n",
+    "            return False\n",
+    "    return True"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "8f20041b-030b-4d49-bfb4-3d40d2381c19",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def make_message_list(manitto_list):\n",
+    "    message_list={}\n",
+    "    boneam=list(manitto_list.keys())\n",
+    "    badum=list(manitto_list.values())\n",
+    "    \n",
+    "    for key in boneam:\n",
+    "        message_list[key]=(f'당신의 마니또는 {manitto_list[key]}입니다.')\n",
+    "    return message_list"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "42d532a6-399e-4c1b-96ce-e81e8b732a3e",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def get_email_dict(names,mails):\n",
+    "    email_list={}\n",
+    "    i=0\n",
+    "    for name in names:\n",
+    "        email_list[name]=mails[i]\n",
+    "        i+=1\n",
+    "    return email_list"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "9ef9bf15-7ac7-4839-97b6-63191cadf37b",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df = pd.read_csv('name_datas_for_manitto.csv', encoding='cp949')\n",
+    "names=list(df['name'])\n",
+    "mails=list(df['email'])\n",
+    "\n",
+    "manitto_list=make_manitto_list(names)\n",
+    "while not check(manitto_list):\n",
+    "    manitto_list=make_manitto_list(names)\n",
+    "\n",
+    "message_list=make_message_list(manitto_list)\n",
+    "email_list=get_email_dict(names,mails)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "35e70a33-b0b8-404b-b697-a2e1682173a6",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "print(message_list)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "ea8b9d04-ed1b-40f0-9fd1-97f1fc48348c",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "print(email_list)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "a5394de1-549a-4d60-a3cd-672e135fd06a",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "for name in names:\n",
+    "    send_email(message=message_list[name],email=email_list[name])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "75fa13cb-5b69-45aa-99d6-004394491bc0",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.10.6"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
